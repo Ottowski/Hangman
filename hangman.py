@@ -1,15 +1,36 @@
 import random
+import tkinter as tk
+from tkinter import messagebox
 
 # Predefined list of words
 word_list = ['hangman', 'developer', 'computer', 'python', 'programming']
-
-# Computer chooses a random word
-secret_word = random.choice(word_list)
+secret_word = ""
 guessed_letters = []
 max_attempts = 6
 attempts = 0
 
-# Function to display current status of the word
+# Setup main window
+root = tk.Tk()
+root.title("Hangman Game")
+root.geometry("400x300")
+
+# UI Components
+word_label = tk.Label(root, text="", font= 20)
+word_label.pack(pady=10)
+
+info_label = tk.Label(root, text="Guess a letter:")
+info_label.pack()
+
+guess_entry = tk.Entry(root)
+guess_entry.pack()
+
+attempts_label = tk.Label(root, text="")
+attempts_label.pack(pady=10)
+
+guessed_label = tk.Label(root, text="Guessed letters: ")
+guessed_label.pack(pady=5)
+
+
 def display_word():
     display = ''
     for letter in secret_word:
@@ -19,36 +40,63 @@ def display_word():
             display += '_ '
     return display.strip()
 
-print("Project Hangman!")
-print("Guess the word:", display_word())
-print(f"You have {max_attempts} attempts.\n")
 
-while attempts < max_attempts:
-    guess = input("Guess a letter: ").lower()
+def update_display():
+    word_label.config(text=display_word())
+    attempts_label.config(text=f"Attempts left: {max_attempts - attempts}")
+    guessed_label.config(text=f"Guessed letters: {', '.join(guessed_letters)}")
+
+
+def check_guess():
+    global attempts
+
+    guess = guess_entry.get().lower()
+    guess_entry.delete(0, tk.END)
 
     if len(guess) != 1 or not guess.isalpha():
-        print("Please enter only one letter.")
-        continue
+        messagebox.showwarning("Please enter only one letter.")
+        return
 
     if guess in guessed_letters:
-        print("You already guessed that letter.")
-        continue
+        messagebox.showinfo(f"You already guessed '{guess}'.")
+        return
 
     guessed_letters.append(guess)
 
     if guess in secret_word:
-        print("Good guess!")
+        if all(letter in guessed_letters for letter in secret_word):
+            update_display()
+            messagebox.showinfo("You Win!", f"Congratulations! The word was: {secret_word}")
+            ask_restart()
     else:
-        print("Oops, wrong guess!")
         attempts += 1
+        if attempts >= max_attempts:
+            update_display()
+            messagebox.showinfo("Game Over", f"Sorry, you lose. The word was: {secret_word}") 
+            ask_restart()
 
-    print("Word:", display_word())
-    print(f"Wrong guesses: {attempts}/{max_attempts}\n")
+    update_display()
 
-    # Check if the player has won
-    if all(letter in guessed_letters for letter in secret_word):
-        print(f"Congratulations! The word was: {secret_word}")
-        print("You won!")
-        break
-else:
-    print(f"Sorry, you lost. The word was: {secret_word}")
+
+def start_new_game():
+    global secret_word, guessed_letters, attempts
+    secret_word = random.choice(word_list)
+    guessed_letters = []
+    attempts = 0
+    update_display()
+
+
+def ask_restart():
+    again = messagebox.askyesno("Play Again?", "Do you want to play again?")
+    if again:
+        start_new_game()
+    else:
+        root.destroy()
+
+
+guess_button = tk.Button(root, text="Guess", command=check_guess)
+guess_button.pack(pady=5)
+
+# Start game
+start_new_game()
+root.mainloop()
