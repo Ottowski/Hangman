@@ -24,6 +24,9 @@ info_label.pack()
 guess_entry = tk.Entry(root)
 guess_entry.pack()
 
+# ➕ Enter key to the guess function
+guess_entry.bind("<Return>", lambda event: check_guess())
+
 attempts_label = tk.Label(root, text="")
 attempts_label.pack(pady=10)
 
