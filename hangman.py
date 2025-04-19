@@ -4,6 +4,8 @@ from tkinter import messagebox
 
 # Predefined list of words
 word_list = ['hangman', 'developer', 'computer', 'python', 'programming']
+
+# Computer chooses a random word
 secret_word = ""
 guessed_letters = []
 max_attempts = 6
@@ -15,16 +17,14 @@ root.title("Hangman Game")
 root.geometry("400x300")
 
 # UI Components
-word_label = tk.Label(root, text="", font= 20)
+word_label = tk.Label(root, text="", font=20)
 word_label.pack(pady=10)
 
-info_label = tk.Label(root, text="Guess a letter:")
+info_label = tk.Label(root, text="Guess a letter or the full word:")
 info_label.pack()
 
 guess_entry = tk.Entry(root)
 guess_entry.pack()
-
-# ➕ Enter key to the guess function
 guess_entry.bind("<Return>", lambda event: check_guess())
 
 attempts_label = tk.Label(root, text="")
@@ -56,12 +56,30 @@ def check_guess():
     guess = guess_entry.get().lower()
     guess_entry.delete(0, tk.END)
 
-    if len(guess) != 1 or not guess.isalpha():
-        messagebox.showwarning("Please enter only one letter.")
+    if not guess.isalpha():
+        messagebox.showwarning("Invalid Input", "Please enter only letters.")
         return
 
+    if len(guess) > 1:
+        # Full word guess
+        if guess == secret_word:
+            update_display()
+            messagebox.showinfo("You Win!", f"Nice! You guessed the word: {secret_word}")
+            ask_restart()
+        else:
+            attempts += 1
+            if attempts >= max_attempts:
+                update_display()
+                messagebox.showinfo("Game Over", f"Sorry, you lose. The word was: {secret_word}")
+                ask_restart()
+            else:
+                messagebox.showinfo("Incorrect", f"'{guess}' is not the word.")
+        update_display()
+        return
+
+    # Single letter guess
     if guess in guessed_letters:
-        messagebox.showinfo(f"You already guessed '{guess}'.")
+        messagebox.showinfo("Already Guessed", f"You already guessed '{guess}'.")
         return
 
     guessed_letters.append(guess)
@@ -75,7 +93,7 @@ def check_guess():
         attempts += 1
         if attempts >= max_attempts:
             update_display()
-            messagebox.showinfo("Game Over", f"Sorry, you lose. The word was: {secret_word}") 
+            messagebox.showinfo("Game Over", f"Sorry, you lose. The word was: {secret_word}")
             ask_restart()
 
     update_display()
